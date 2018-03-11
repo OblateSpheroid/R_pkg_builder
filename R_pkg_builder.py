@@ -1,7 +1,11 @@
-import os
+import os, sys
 import yaml
 from subprocess import call, check_output
 from rpy2.robjects.packages import importr
+
+LIBFOLDER = os.getenv('LIBFOLDER', '/usr/lib/R/library')
+OUTFOLDER = os.getenv('OUTFOLDER', os.getcwd())
+ZEXEC = os.getenv('ZEXEC', '/usr/bin/tar')
 
 def extract_version(file):
     '''Return version number from an R Description file.
@@ -16,7 +20,7 @@ def zipit(libfolder, outfolder, exec):
        to use in naming a zip file. Zips package to outfolder
        in correct format.'''
     old_wd = os.getcwd()
-    os.chdir('libfolder')
+    os.chdir(libfolder)
     for dir in os.listdir(libfolder):
         try:
             v = extract_version(dir+'/DESCRIPTION')
@@ -29,6 +33,9 @@ def zipit(libfolder, outfolder, exec):
 def create_PACKAGES(outfolder):
     rtools.write_PACKAGES(outfolder, type='win.bin')
 
+def main(libfolder=LIBFOLDER, outfolder=OUTFOLDER, exec=ZEXEC):
+    zipit(libfolder, outfolder, exec) #loops through packages creating folders
+    create_PACKAGES(outfolder) # creates the PACKAGES file for R
+    
 if __name__ == '__main__':
-    zipit(libfolder, outfolder, exec)
-    create_PACKAGES(outfolder)
+    sys.exit(main())
