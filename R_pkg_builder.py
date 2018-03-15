@@ -1,3 +1,7 @@
+'''This script points to an R library directory and an
+output directory, and--provided a zip executable--creates
+an R packages repositiory in the output directory'''
+
 import os, sys
 from subprocess import call, check_output
 from rpy2.robjects.packages import importr
@@ -36,12 +40,16 @@ def zipit(libfolder, outfolder, exec):
     os.chdir(old_wd)
 
 def create_PACKAGES(outfolder):
+    '''Call R tools::write_PACKAGES function to create
+       PACKAGES file needed for repo'''
     rtools = importr('tools')
     rtools.write_PACKAGES(outfolder, type='win.bin')
 
 def main(libfolder=LIBFOLDER, outfolder=OUTFOLDER, exec=ZEXEC):
-    zipit(libfolder, outfolder, exec) #loops through packages creating folders
-    create_PACKAGES(outfolder) # creates the PACKAGES file for R
+    '''Loops through directories in libfolder, zips them, names
+       zip files based on version number, and builds the PACKAGES file'''
+    zipit(libfolder, outfolder, exec)
+    create_PACKAGES(outfolder)
     
 if __name__ == '__main__':
     sys.exit(main())
