@@ -1,19 +1,24 @@
 import os, sys
-import yaml
 from subprocess import call, check_output
 from rpy2.robjects.packages import importr
 
 LIBFOLDER = os.getenv('LIBFOLDER', '/usr/lib/R/library')
 OUTFOLDER = os.getenv('OUTFOLDER', os.getcwd())
-ZEXEC = os.getenv('ZEXEC', '/usr/bin/tar')
+ZEXEC = os.getenv('ZEXEC', '/usr/bin/zip')
 
 def extract_version(file):
     '''Return version number from an R Description file.
        Example:
        extract_version('/usr/lib/R/library/base/DESCRIPTION')'''
-    stream = open(file, 'r').read().replace('\t','')
-    y = yaml.load(stream)
-    return y['Version']
+    stream = open(file, 'r').read().replace('\t','').split('\n')
+    d = {}
+    for x in stream:
+        try:
+            k,v = x.split(':')
+            d[k] = v
+        except: pass
+    version = d['Version'].strip()
+    return version 
 
 def zipit(libfolder, outfolder, exec):
     '''for each package in libfolder, extracts version number
@@ -21,16 +26,17 @@ def zipit(libfolder, outfolder, exec):
        in correct format.'''
     old_wd = os.getcwd()
     os.chdir(libfolder)
-    for dir in os.listdir(libfolder):
+    for dir in os.listdir():
         try:
             v = extract_version(dir+'/DESCRIPTION')
-            call([exec,<zip command>,dir,
-                  outfolder+'/'+dir+'_'+v+'.zip'])
+            call([exec, '-r', outfolder+'/'+dir+'_'+v+'.zip',
+                  dir])
         except:
             pass
     os.chdir(old_wd)
 
 def create_PACKAGES(outfolder):
+    rtools = importr('tools')
     rtools.write_PACKAGES(outfolder, type='win.bin')
 
 def main(libfolder=LIBFOLDER, outfolder=OUTFOLDER, exec=ZEXEC):
