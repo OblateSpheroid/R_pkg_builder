@@ -1,14 +1,28 @@
-'''This script points to an R library directory and an
-output directory, and--provided a zip executable--creates
-an R packages repositiory in the output directory'''
+'''This script points to an R library directory (LIBFOLDER) where built R
+packages are (non-zipped) and--provided a zip executable (ZEXEC)--creates
+an R package repositiory in the output directory (OUTFOLDER).
+
+LIBFOLDER, OUTFOLDER, and ZEXEC can be passed as arguments:
+python R_pkg_builder.py LIBFOLDER=/usr/lib/R/library OUTFOLDER=$(pwd) ZEXEC=$(which zip)
+
+The zip files and the PACKAGES file this script creates in the output
+directory can be used in R's install.packages() function, as in:
+install.packages(repos='path to repo', type='win.bin')
+'''
 
 import os, sys
 from subprocess import call, check_output
 from rpy2.robjects.packages import importr
 
-LIBFOLDER = os.getenv('LIBFOLDER', '/usr/lib/R/library')
-OUTFOLDER = os.getenv('OUTFOLDER', os.getcwd())
-ZEXEC = os.getenv('ZEXEC', '/usr/bin/zip')
+# Pull variables in from passed arguments:
+if len(sys.argv) > 1:
+    for arg in sys.argv[1:len(sys.argv)]:
+        try:
+            k,v = arg.split('=')
+            exec(k.upper()+'='+"\'"+v+"\'")
+        except:
+            pass
+
 
 def extract_version(file):
     '''Return version number from an R Description file.
@@ -52,4 +66,10 @@ def main(libfolder=LIBFOLDER, outfolder=OUTFOLDER, exec=ZEXEC):
     create_PACKAGES(outfolder)
     
 if __name__ == '__main__':
+    if LIBFOLDER not in globals():
+        sys.exit('LIBFOLDER not set. Need to set LIBFOLDER, OUTFOLDER, and ZEXEC')
+    if OUTFOLDER not in globals():
+        sys.exit('OUTFOLDER not set. Need to set LIBFOLDER, OUTFOLDER, and ZEXEC')
+    if ZEXEC not in globals():
+        sys.exit('ZEXEC not set. Need to set LIBFOLDER, OUTFOLDER, and ZEXEC')
     sys.exit(main())
