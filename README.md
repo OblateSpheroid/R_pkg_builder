@@ -29,7 +29,7 @@ The package can then be installed using the `repos=https://oblatespheroid.github
  - Python 3
  - packages in `requirements.txt`.
    - Within a virtual env, run: `pip install requirements-pip.txt`
-   - Or, within a conda environment, run: `conda install -f requirements-conda.txt`
+   - Or, within a conda environment, run: `conda install --file requirements-conda.txt`
 
 #### Run:
 In Windows, from the main directory in your local repo (`RPackages`), something like:
